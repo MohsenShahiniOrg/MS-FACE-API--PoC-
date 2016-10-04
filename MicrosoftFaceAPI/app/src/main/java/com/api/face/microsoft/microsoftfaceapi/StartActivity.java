@@ -18,6 +18,7 @@ import android.widget.FrameLayout;
 
 import com.api.face.microsoft.microsoftfaceapi.fragments.DetectionFragment;
 import com.api.face.microsoft.microsoftfaceapi.fragments.IdentificationFragment;
+import com.api.face.microsoft.microsoftfaceapi.helper.ImageHelper;
 
 public class StartActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -52,6 +53,7 @@ public class StartActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        new ImageHelper(getApplicationContext());
     }
 
     @Override

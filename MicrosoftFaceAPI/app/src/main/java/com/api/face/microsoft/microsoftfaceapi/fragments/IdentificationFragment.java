@@ -27,33 +27,38 @@ import com.api.face.microsoft.microsoftfaceapi.R;
 import com.api.face.microsoft.microsoftfaceapi.helper.ImageHelper;
 import com.microsoft.projectoxford.face.FaceServiceClient;
 import com.microsoft.projectoxford.face.FaceServiceRestClient;
+import com.microsoft.projectoxford.face.contract.CreatePersonResult;
 import com.microsoft.projectoxford.face.contract.Face;
 import com.microsoft.projectoxford.face.contract.FaceRectangle;
+import com.microsoft.projectoxford.face.contract.IdentifyResult;
+import com.microsoft.projectoxford.face.contract.Person;
 import com.microsoft.projectoxford.face.rest.ClientException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import static android.app.Activity.RESULT_OK;
 
-public class DetectionFragment extends Fragment implements View.OnClickListener {
+public class IdentificationFragment extends Fragment implements View.OnClickListener {
 
     private ImageView imageView;
     private TextView resultText;
     private Button browseButton;
-    private final int UPLOAD_IMAGE = 1;
+    private final int UPLOAD_IMAGE =  1;
     private ImageResultReceiver imageReceiver;
     public static final String URL = "url";
     public static final String CALLBACK = "receiver";
     public static final String RESULT_IMAGE = "image";
-
+    public static final String RESULT_FACES = "faces";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -71,24 +76,12 @@ public class DetectionFragment extends Fragment implements View.OnClickListener 
 
     @Override
     public void onClick(View v) {
-        Bitmap bitmap = null;
-        // imageReceiver = new ImageResultReceiver(new Handler());
-        // imageReceiver.setReceiver(this);
-
-        // Intent intent = new Intent(getActivity(), ImageLoadService.class);
-        // intent.putExtra(URL, "http://b2blogger.com/pressroom/upload_images/gps-tracker_1.JPG");
-
-        // intent.putExtra(CALLBACK, imageReceiver);
-        //getActivity().startService(intent);
-
         Intent i = new Intent(
                 Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 
         startActivityForResult(i, UPLOAD_IMAGE);
-
     }
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -108,35 +101,35 @@ public class DetectionFragment extends Fragment implements View.OnClickListener 
 
             Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
             imageView.setImageBitmap(bitmap);
-            new DetectionTask().execute(bitmap);
+            new IdentificationTask().execute(bitmap);
         }
     }
 
-
-//    @Override
-//    public void onReceiveResult(int resultCode, Bundle resultData) {
-//        Bitmap bitmap = resultData.getParcelable(RESULT_IMAGE);
-//        imageView.setImageBitmap(bitmap);
-//        String value = resultData.getString(RESULT_FACES);
-//
-//        Toast.makeText(getActivity(), value, Toast.LENGTH_LONG);
-//        new DetectionTask().execute(bitmap);
-//    }
-
-    private class DetectionTask extends AsyncTask<Bitmap, Void, Face[]> {
-
-        Bitmap bitmap;
+    private class IdentificationTask extends AsyncTask<Bitmap, Void, List<Person>> {
+        Bitmap bitmap = null;
 
         @Override
-        protected Face[] doInBackground(Bitmap... params) {
+        protected List<Person>  doInBackground(Bitmap... params) {
             // Get an instance of face service client to detect faces in image.
-            FaceServiceClient faceServiceClient = new FaceServiceRestClient(getString(R.string.subscription_key));
             bitmap = params[0];
-            return ImageHelper.detect(params[0]);
+            List<Person> persons =  new ArrayList<>();
+            try {
+
+                Face[] faces = ImageHelper.detect(bitmap);
+                ImageHelper.addPersonToTheGroup("",faces,"Джи","информаия");
+                 persons = ImageHelper.identify(faces);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClientException e) {
+                e.printStackTrace();
+            }
+            return  persons;
         }
+
 
         @Override
         protected void onPreExecute() {
+
         }
 
         @Override
@@ -144,18 +137,9 @@ public class DetectionFragment extends Fragment implements View.OnClickListener 
         }
 
         @Override
-        protected void onPostExecute(Face[] result) {
+        protected void onPostExecute(List<Person>  result) {
 
-            imageView.setImageBitmap(ImageHelper.drawFaceRectanglesOnBitmap(bitmap, result));
-
-            String face_description = "Age: " + (result[0].faceAttributes.age) + "\n"
-                    + "Gender: " + result[0].faceAttributes.gender + "\n"
-                    + "Head pose(in degree): roll(" + result[0].faceAttributes.headPose.roll + "), "
-                    + "yaw(" + result[0].faceAttributes.headPose.yaw + ")\n"
-                    + "Glasses: " + result[0].faceAttributes.glasses + "\n"
-                    + "Smile: " + result[0].faceAttributes.smile;
-
-            resultText.setText(face_description);
+            resultText.setText(result.toString());
 
         }
     }
