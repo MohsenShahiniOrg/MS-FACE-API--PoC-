@@ -24,26 +24,18 @@ import java.util.List;
 public class ImageGroupAdapter extends RecyclerView.Adapter<ImageGroupAdapter.ImageViewHolder> {
 
     private List<String> mDataset;
-    private SparseBooleanArray selectedItems;
-    private FrameLayout backLayout;
     private Context mContext;
-
-
-    // Provide a reference to the views for each data item
-    // Complex data items may need more than one view per item, and
-    // you provide access to all the views for a data item in a view holder
-    // Provide a suitable constructor (depends on the kind of dataset)
-
+    public SparseBooleanArray selectedItems ;
 
     public ImageGroupAdapter(List<String> myDataset, Context context) {
         mDataset = myDataset;
         mContext = context;
+        selectedItems = new SparseBooleanArray();
     }
 
     @Override
     public ImageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.cart_view_folder, parent, false);
-
         ImageViewHolder vh = new ImageViewHolder(v);
         return vh;
     }
@@ -51,6 +43,7 @@ public class ImageGroupAdapter extends RecyclerView.Adapter<ImageGroupAdapter.Im
     @Override
     public void onBindViewHolder(ImageViewHolder holder, int position) {
         //holder.viewImage.setImageBitmap(mDataset.get(position));
+        holder.background.setSelected(selectedItems.get(position, false));
         Glide.with(mContext).load(mDataset.get(position)).override(1200, 1200).into(holder.viewImage);
     }
 
@@ -58,15 +51,6 @@ public class ImageGroupAdapter extends RecyclerView.Adapter<ImageGroupAdapter.Im
     @Override
     public int getItemCount() {
         return mDataset.size();
-    }
-
-
-    public void toggleSelection(int pos) {
-        if (selectedItems.get(pos, false)) {
-            selectedItems.delete(pos);
-        } else {
-            selectedItems.put(pos, true);
-        }
     }
 
     public int getSelectedItemCount() {
@@ -82,28 +66,28 @@ public class ImageGroupAdapter extends RecyclerView.Adapter<ImageGroupAdapter.Im
         return items;
     }
 
-    public class ImageViewHolder extends RecyclerView.ViewHolder {
+    public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public ImageView viewImage;
-        //  public  SparseBooleanArray selectedItems = new SparseBooleanArray();
-
+        public FrameLayout background;
 
         public ImageViewHolder(View itemView) {
             super(itemView);
+            background = (FrameLayout) itemView.findViewById(R.id.background);
             viewImage = (ImageView) itemView.findViewById(R.id.view_image);
+            viewImage.setOnClickListener(this);
         }
 
-//        @Override
-//        public void onClick(View view) {
-//            if (selectedItems.get(getAdapterPosition(), false)) {
-//                selectedItems.delete(getAdapterPosition());
-//                view.setSelected(false);
-//            }
-//            else {
-//                selectedItems.put(getAdapterPosition(), true);
-//                view.setSelected(true);
-//            }
-//        }
+        @Override
+        public void onClick(View view) {
+            if (selectedItems.get(getAdapterPosition(), false)) {
+                selectedItems.delete(getAdapterPosition());
+                background.setSelected(false);
+            } else {
+                selectedItems.put(getAdapterPosition(), true);
+                background.setSelected(true);
+            }
+        }
     }
 
 

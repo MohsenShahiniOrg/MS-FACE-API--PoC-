@@ -21,6 +21,7 @@ import com.microsoft.projectoxford.face.rest.ClientException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -52,8 +53,33 @@ public class ImageHelper {
     public static Face[] detect(Bitmap bitmap)
     {
         try {
-          return   faceServiceClient.detect(
+            return   faceServiceClient.detect(
                     convertBitmapToStream(bitmap),
+                    true,       /* Whether to return face ID */
+                    true,       /* Whether to return face landmarks */
+                                    /* Which face attributes to analyze, currently we support:
+                                       age,gender,headPose,smile,facialHair */
+                    new FaceServiceClient.FaceAttributeType[]{
+                            FaceServiceClient.FaceAttributeType.Age,
+                            FaceServiceClient.FaceAttributeType.Gender,
+                            FaceServiceClient.FaceAttributeType.Glasses,
+                            FaceServiceClient.FaceAttributeType.Smile,
+                            FaceServiceClient.FaceAttributeType.HeadPose
+                    });
+        } catch (ClientException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return new Face[0];
+    }
+
+    public static Face[] detectURL(String path)
+    {
+        try {
+            return   faceServiceClient.detect(
+                    path,
                     true,       /* Whether to return face ID */
                     true,       /* Whether to return face landmarks */
                                     /* Which face attributes to analyze, currently we support:
@@ -111,7 +137,7 @@ public class ImageHelper {
         return persons;
     }
 
-    private static UUID[] getFacesId (Face[] faces)
+    public static UUID[] getFacesId (Face[] faces)
     {
         UUID[] uuids =  new UUID[faces.length];
         for (int i = 0; i<faces.length ;i++) {
@@ -127,20 +153,23 @@ public class ImageHelper {
             personGroupId = "Strangers";
 
         try {
-            faceServiceClient.createPersonGroup(personGroupId, "Acquaintance","Acquaintance");
+         //   faceServiceClient.createPersonGroup(personGroupId, "Strangers","Strangers");
             CreatePersonResult man =   faceServiceClient.createPerson(personGroupId,personName,userData);
-            faceServiceClient.addPersonFace(personGroupId,faces[0].faceId,"джи","джи",faces[0].faceRectangle);
+            faceServiceClient.addPersonFace(personGroupId,man.personId,"Strangers","Strangers",faces[0].faceRectangle);
             faceServiceClient.trainPersonGroup(personGroupId);
             TrainingStatus trainingStatus = faceServiceClient.getPersonGroupTrainingStatus(
                     personGroupId);     /* personGroupId */
 
-            if (trainingStatus.status != TrainingStatus.Status.Succeeded) {
-
+            while (trainingStatus.status != TrainingStatus.Status.Succeeded) {
+        Thread.sleep(100L);
             }
 
             } catch (ClientException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();}}
+            e.printStackTrace();} catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
     }

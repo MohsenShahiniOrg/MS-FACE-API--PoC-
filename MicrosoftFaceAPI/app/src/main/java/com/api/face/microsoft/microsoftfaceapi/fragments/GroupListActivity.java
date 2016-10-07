@@ -1,5 +1,6 @@
 package com.api.face.microsoft.microsoftfaceapi.fragments;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -14,27 +15,28 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.api.face.microsoft.microsoftfaceapi.ImageGroupAdapter;
 
 import com.api.face.microsoft.microsoftfaceapi.R;
+import com.api.face.microsoft.microsoftfaceapi.helper.ImageHelper;
+import com.bumptech.glide.Glide;
 import com.microsoft.projectoxford.face.FaceServiceRestClient;
+import com.microsoft.projectoxford.face.contract.Face;
+import com.microsoft.projectoxford.face.contract.IdentifyResult;
 import com.microsoft.projectoxford.face.contract.Person;
+import com.microsoft.projectoxford.face.contract.TrainingStatus;
 import com.microsoft.projectoxford.face.rest.ClientException;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link GroupListActivity.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link GroupListActivity#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class GroupListActivity extends AppCompatActivity implements View.OnClickListener {
 
     private List<File> fileList;
@@ -42,11 +44,9 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
     private Button createGroupButton;
     private TextView groupName;
     private RecyclerView imageGroupRecyclerView;
-    private RecyclerView.Adapter imageGroupRecyclerAdapter;
+    private ImageGroupAdapter imageGroupRecyclerAdapter;
     private RecyclerView.LayoutManager imageGroupLayoutManager;
-
-
-    private OnFragmentInteractionListener mListener;
+    private List<String> allPaths;
 
     public GroupListActivity() {
         // Required empty public constructor
@@ -77,55 +77,93 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
         imageGroupLayoutManager = new LinearLayoutManager(this);
         imageGroupRecyclerView.setLayoutManager(imageGroupLayoutManager);
         File rootDirectory = new File(Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DCIM + "/Camera");
-       List<String> allPaths = getAllImagePaths(rootDirectory);
-       // File rootDirectory = new File(Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DCIM + "/Camera");
-       // List<Bitmap> allImages = getAllImagesFfromDirectory(rootDirectory);
-        imageGroupRecyclerAdapter = new ImageGroupAdapter(allPaths,this);
+        allPaths = getAllImagePaths(rootDirectory);
+        imageGroupRecyclerAdapter = new ImageGroupAdapter(allPaths, this);
         imageGroupRecyclerView.setAdapter(imageGroupRecyclerAdapter);
     }
 
     @Override
     public void onClick(View v) {
+        Log.i("TAG", imageGroupRecyclerAdapter.getSelectedItemCount() + "");
+        Bitmap bitmap = null;
+        for (Integer index : imageGroupRecyclerAdapter.getSelectedItems()) {
+            new PrepareGroupTask().execute();
+            new TrainGroupTask(this).execute("Group");
 
+            new IdentificationTask().execute();
+        }
     }
 
-    private class IdentificationTask extends AsyncTask<Bitmap, Void, List<Person>> {
+    private class PrepareGroupTask extends AsyncTask<Void, Void, String> {
         Bitmap bitmap = null;
 
         @Override
-        protected List<Person> doInBackground(Bitmap... params) {
-            // Get an instance of face service client to detect faces in image.
-            bitmap = params[0];
+        protected String  doInBackground(Void... params) {
             List<Person> persons = new ArrayList<>();
+            String groupName = "Group";
             try {
                 FaceServiceRestClient faceServiceClient = new FaceServiceRestClient(getString(R.string.subscription_key));
-                faceServiceClient.createPersonGroup("Group", "Man", "Man");
                 faceServiceClient.createPerson("Group", "Man", "Man");
-
+                Face[] faces = ImageHelper.detectURL("http://b2blogger.com/pressroom/upload_images/gps-tracker_1.JPG");
+                faceServiceClient.addPersonFace("Group", faces[0].faceId, "http://b2blogger.com/pressroom/upload_images/gps-tracker_1.JPG", "usedData", faces[0].faceRectangle);
 
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (ClientException e) {
                 e.printStackTrace();
             }
-            return persons;
+            return groupName;
         }
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+    private class TrainGroupTask extends AsyncTask<String, Void, Void> {
+
+        private Context activityContext;
+
+        public TrainGroupTask(Context activityContext) {
+            this.activityContext = activityContext;
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+
+            try {
+                FaceServiceRestClient faceServiceClient = new FaceServiceRestClient(getString(R.string.subscription_key));
+                faceServiceClient.trainPersonGroup("Group");
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClientException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
+
+
+        private class IdentificationTask extends AsyncTask<Void, Void, Void> {
+
+            protected Void doInBackground(Void... params) {
+
+                try {
+                    Face[] faces = ImageHelper.detectURL("http://b2blogger.com/pressroom/upload_images/gps-tracker_1.JPG");
+                    FaceServiceRestClient faceServiceClient = new FaceServiceRestClient(getString(R.string.subscription_key));
+                    IdentifyResult[] result = faceServiceClient.identity("Group", ImageHelper.getFacesId(faces), 1);
+                    Log.i("TAG","result" + result.toString());
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClientException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                Log.i("TAG","завершено");
+            }
+        }
 
     private List<String> getAllImagePaths(File rootDirectory) {
 
@@ -154,10 +192,10 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
                 options.inJustDecodeBounds = true;
                 BitmapFactory.decodeFile(filePath, options);
                 Log.i("TAG", options.outHeight + " /" + options.outWidth);
-               options.inJustDecodeBounds = false;
-                       options.inSampleSize = 4;
+                options.inJustDecodeBounds = false;
+                options.inSampleSize = 4;
                 Bitmap bitmap = BitmapFactory.decodeFile(filePath, options);
-                Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, 200,300, false);
+                Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, 200, 300, false);
                 allImages.add(resizedBitmap);
             }
             if (file.isDirectory()) {

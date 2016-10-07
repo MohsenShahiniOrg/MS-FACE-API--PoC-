@@ -48,8 +48,10 @@ public class IdentificationFragment extends Fragment implements View.OnClickList
 
     private ImageView imageView;
     private TextView resultText;
-    private Button browseButton;
-    private final int UPLOAD_IMAGE =  1;
+    private Button addImageButton;
+    private Button addGroupButton;
+    private Button identifyButton;
+    private final int UPLOAD_IMAGE = 1;
     private ImageResultReceiver imageReceiver;
     public static final String URL = "url";
     public static final String CALLBACK = "receiver";
@@ -64,23 +66,47 @@ public class IdentificationFragment extends Fragment implements View.OnClickList
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_detection, container, false);
+        View view = inflater.inflate(R.layout.fragment_identification, container, false);
 
         imageView = (ImageView) view.findViewById(R.id.view_image);
-        browseButton = (Button) view.findViewById(R.id.browse_button);
+        addImageButton = (Button) view.findViewById(R.id.add_image_button);
+        addGroupButton = (Button) view.findViewById(R.id.add_group_button);
+        identifyButton = (Button) view.findViewById(R.id.identify_button);
         resultText = (TextView) view.findViewById(R.id.result_text);
 
-        browseButton.setOnClickListener(this);
+        addImageButton.setOnClickListener(this);
+        addGroupButton.setOnClickListener(this);
+        identifyButton.setOnClickListener(this);
         return view;
     }
 
     @Override
     public void onClick(View v) {
-        Intent i = new Intent(
-                Intent.ACTION_PICK,
-                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 
-        startActivityForResult(i, UPLOAD_IMAGE);
+        switch (v.getId()) {
+            case R.id.add_image_button: {
+                Intent i = new Intent(
+                        Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+                startActivityForResult(i, UPLOAD_IMAGE);
+
+                break;
+            }
+
+            case R.id.add_group_button: {
+                Intent intent = new Intent(getActivity(), GroupListActivity.class);
+                startActivity(intent);
+
+                break;
+            }
+
+            case R.id.identify_button: {
+                break;
+            }
+
+        }
+
     }
 
     @Override
@@ -109,21 +135,21 @@ public class IdentificationFragment extends Fragment implements View.OnClickList
         Bitmap bitmap = null;
 
         @Override
-        protected List<Person>  doInBackground(Bitmap... params) {
+        protected List<Person> doInBackground(Bitmap... params) {
             // Get an instance of face service client to detect faces in image.
             bitmap = params[0];
-            List<Person> persons =  new ArrayList<>();
+            List<Person> persons = new ArrayList<>();
             try {
 
                 Face[] faces = ImageHelper.detect(bitmap);
-                ImageHelper.addPersonToTheGroup("",faces,"Джи","информаия");
-                 persons = ImageHelper.identify(faces);
+                ImageHelper.addPersonToTheGroup("Strangers", faces, "Strangers", "информаия");
+                persons = ImageHelper.identify(faces);
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (ClientException e) {
                 e.printStackTrace();
             }
-            return  persons;
+            return persons;
         }
 
 
@@ -137,7 +163,7 @@ public class IdentificationFragment extends Fragment implements View.OnClickList
         }
 
         @Override
-        protected void onPostExecute(List<Person>  result) {
+        protected void onPostExecute(List<Person> result) {
 
             resultText.setText(result.toString());
 
