@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.microsoft.projectoxford.face.contract.FaceRectangle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,11 +58,11 @@ public class ImageGroupAdapter extends RecyclerView.Adapter<ImageGroupAdapter.Im
         return selectedItems.size();
     }
 
-    public List<Integer> getSelectedItems() {
-        List<Integer> items =
-                new ArrayList<Integer>(selectedItems.size());
+    public List<String> getSelectedItems() {
+        List<String> items =
+                new ArrayList<String>(selectedItems.size());
         for (int i = 0; i < selectedItems.size(); i++) {
-            items.add(selectedItems.keyAt(i));
+            items.add(mDataset.get(selectedItems.keyAt(i)));
         }
         return items;
     }

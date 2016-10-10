@@ -16,12 +16,26 @@
 
     <string name="action_settings">Settings</string>
 
+    //fragment_identification
     <string name="add_image_button">Add image</string>
-    <string name="add_group_button">Add group</string>
+    <string name="manage_group_button">Manage groups</string>
+    <string name="add_person_button">Add person</string>
     <string name="identify_button">Identify</string>
 
     //activity_group_list
     <string name="group_name">Put group name here</string>
     <string name="create_group">Create group</string>
+    <string name="group_data">Additional group information</string>
+    <string name="group_id">later it will be autocreated (int)</string>
+
+    <string name="person_name">Put person name here</string>
+    <string name="create_person">Create person</string>
+    <string name="person_data">Additional person information</string>
+
+    //trainDialog
+    <string name="title">Person creaation </string>
+    <string name="dialog_message">Person creaation finished</string>
+    <string name="possitive_button">Start group training</string>
+    <string name="negative_button">Add more person</string>
 
 </resources>

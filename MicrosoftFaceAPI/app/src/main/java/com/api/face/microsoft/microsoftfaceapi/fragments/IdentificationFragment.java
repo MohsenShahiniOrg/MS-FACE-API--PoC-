@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.api.face.microsoft.microsoftfaceapi.ImageLoadService;
 import com.api.face.microsoft.microsoftfaceapi.ImageResultReceiver;
@@ -43,6 +45,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static android.app.Activity.RESULT_OK;
+import static com.api.face.microsoft.microsoftfaceapi.R.id.toolbar;
 
 public class IdentificationFragment extends Fragment implements View.OnClickListener {
 
@@ -51,6 +54,7 @@ public class IdentificationFragment extends Fragment implements View.OnClickList
     private Button addImageButton;
     private Button addGroupButton;
     private Button identifyButton;
+    private String picturePath;
     private final int UPLOAD_IMAGE = 1;
     private ImageResultReceiver imageReceiver;
     public static final String URL = "url";
@@ -58,10 +62,6 @@ public class IdentificationFragment extends Fragment implements View.OnClickList
     public static final String RESULT_IMAGE = "image";
     public static final String RESULT_FACES = "faces";
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -77,6 +77,9 @@ public class IdentificationFragment extends Fragment implements View.OnClickList
         addImageButton.setOnClickListener(this);
         addGroupButton.setOnClickListener(this);
         identifyButton.setOnClickListener(this);
+
+      //  new DeleteAllGroupsTask().execute();
+
         return view;
     }
 
@@ -102,11 +105,11 @@ public class IdentificationFragment extends Fragment implements View.OnClickList
             }
 
             case R.id.identify_button: {
+
+            new IdentificationTask().execute(picturePath);
                 break;
             }
-
         }
-
     }
 
     @Override
@@ -122,51 +125,44 @@ public class IdentificationFragment extends Fragment implements View.OnClickList
             cursor.moveToFirst();
 
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String picturePath = cursor.getString(columnIndex);
+            picturePath = cursor.getString(columnIndex);
             cursor.close();
 
             Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
             imageView.setImageBitmap(bitmap);
-            new IdentificationTask().execute(bitmap);
         }
     }
 
-    private class IdentificationTask extends AsyncTask<Bitmap, Void, List<Person>> {
-        Bitmap bitmap = null;
+    private class IdentificationTask extends AsyncTask<String, Void, Void> {
+        // String imagePath - params[0]
+//
+        protected Void doInBackground(String... params) {
 
-        @Override
-        protected List<Person> doInBackground(Bitmap... params) {
-            // Get an instance of face service client to detect faces in image.
-            bitmap = params[0];
-            List<Person> persons = new ArrayList<>();
-            try {
+            ImageHelper.identify(params[0]);
 
-                Face[] faces = ImageHelper.detect(bitmap);
-                ImageHelper.addPersonToTheGroup("Strangers", faces, "Strangers", "информаия");
-                persons = ImageHelper.identify(faces);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClientException e) {
-                e.printStackTrace();
-            }
-            return persons;
-        }
-
-
-        @Override
-        protected void onPreExecute() {
-
+            return null;
         }
 
         @Override
-        protected void onProgressUpdate(Void... progress) {
-        }
-
-        @Override
-        protected void onPostExecute(List<Person> result) {
-
-            resultText.setText(result.toString());
-
+        protected void onPostExecute(Void aVoid) {
+            Log.i("TAG", "завершено");
         }
     }
+
+    private class DeleteAllGroupsTask extends AsyncTask<String, Void, Void> {
+        // String imagePath - params[0]
+//
+        protected Void doInBackground(String... params) {
+            ImageHelper.deleteAll();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            Log.i("TAG", "завершено");
+        }
+    }
+
 }
+
+

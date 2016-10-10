@@ -1,6 +1,8 @@
 package com.api.face.microsoft.microsoftfaceapi.fragments;
 
+import android.app.ActionBar;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -8,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -43,11 +46,16 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
     private List<File> fileList;
     private final int UPLOAD_IMAGE = 1;
     private Button createGroupButton;
+    private Button createPersonButton;
     private TextView groupName;
+    private TextView groupId;
+    private TextView personName;
     private RecyclerView imageGroupRecyclerView;
     private ImageGroupAdapter imageGroupRecyclerAdapter;
     private RecyclerView.LayoutManager imageGroupLayoutManager;
     private List<String> allPaths;
+    private ImageHelper helper;
+    private AlertDialog.Builder trainDialog;
 
     public GroupListActivity() {
         // Required empty public constructor
@@ -71,106 +79,99 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
         setContentView(R.layout.activity_group_list);
         createGroupButton = (Button) findViewById(R.id.create_group_button);
         createGroupButton.setOnClickListener(this);
+
+        createPersonButton = (Button) findViewById(R.id.create_person_button);
+        createPersonButton.setOnClickListener(this);
+
         groupName = (TextView) findViewById(R.id.group_name);
+        personName = (TextView) findViewById(R.id.person_name);
+        groupId = (TextView) findViewById(R.id.group_id);
 
         imageGroupRecyclerView = (RecyclerView) findViewById(R.id.image_group_recycler_view);
         imageGroupRecyclerView.setHasFixedSize(true);
         imageGroupLayoutManager = new LinearLayoutManager(this);
         imageGroupRecyclerView.setLayoutManager(imageGroupLayoutManager);
+
+
         File rootDirectory = new File(Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DCIM + "/Camera");
         allPaths = getAllImagePaths(rootDirectory);
+
         imageGroupRecyclerAdapter = new ImageGroupAdapter(allPaths, this);
         imageGroupRecyclerView.setAdapter(imageGroupRecyclerAdapter);
+        helper = new ImageHelper(this);
+
+        trainDialog = new AlertDialog.Builder(this);
+        trainDialog.setTitle(R.string.title);
+        trainDialog.setMessage(R.string.dialog_message);
+        trainDialog.setPositiveButton(R.string.possitive_button, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int arg1) {
+                new TrainGroupTask().execute(groupId.getText().toString());
+            }
+        });
+        trainDialog.setNegativeButton(R.string.negative_button, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int arg1) {
+
+            }
+        });
     }
 
     @Override
     public void onClick(View v) {
+
         Log.i("TAG", imageGroupRecyclerAdapter.getSelectedItemCount() + "");
-        Bitmap bitmap = null;
-        for (Integer index : imageGroupRecyclerAdapter.getSelectedItems()) {
-//            new PrepareGroupTask().execute();
-    //        new TrainGroupTask(this).execute("Group");
-                new IdentificationTask().execute();
+
+        switch (v.getId()) {
+            case R.id.create_group_button: {
+
+                new CreateGroupTask().execute(groupId.getText().toString(),groupName.getText().toString());
+                break;
+            }
+            case R.id.create_person_button: {
+                for (String path : imageGroupRecyclerAdapter.getSelectedItems()) {
+
+                    new CreatePersonTask().execute(groupId.getText().toString(), personName.getText().toString(), path);
+                }
+
+                break;
+            }
         }
     }
 
-    private class PrepareGroupTask extends AsyncTask<Void, Void, String> {
+    private class CreateGroupTask extends AsyncTask<String, Void, Void> {
+// params[0] - String personGroupId
+//
+// params[1] - String name
+        @Override
+        protected Void doInBackground(String... params) {
+            ImageHelper.createGroup(params[0], params[1]);
+            return null;
+        }
+    }
+
+    private class CreatePersonTask extends AsyncTask<String, Void, Void> {
         Bitmap bitmap = null;
 
         @Override
-        protected String  doInBackground(Void... params) {
-            List<Person> persons = new ArrayList<>();
-            String groupName = "Group";
-            try {
-                FaceServiceRestClient faceServiceClient = new FaceServiceRestClient(getString(R.string.subscription_key));
-             //  faceServiceClient.createPersonGroup("113","Group","data");
-               CreatePersonResult person = faceServiceClient.createPerson("113", "Man", "Man");
-                Face[] faces = ImageHelper.detectURL("http://b2blogger.com/pressroom/upload_images/gps-tracker_1.JPG");
-                faceServiceClient.addPersonFace("113", person.personId, "http://b2blogger.com/pressroom/upload_images/gps-tracker_1.JPG", "usedData", faces[0].faceRectangle);
+        protected Void doInBackground(String... params) {
+            ImageHelper.createPerson(params[0], params[1], params[2]);
+            return null;
+        }
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClientException e) {
-                e.printStackTrace();
-            }
-            return groupName;
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            trainDialog.show();
         }
     }
 
     private class TrainGroupTask extends AsyncTask<String, Void, Void> {
 
-        private Context activityContext;
-
-        public TrainGroupTask(Context activityContext) {
-            this.activityContext = activityContext;
-        }
-
         @Override
         protected Void doInBackground(String... params) {
-
-            try {
-                FaceServiceRestClient faceServiceClient = new FaceServiceRestClient(getString(R.string.subscription_key));
-                faceServiceClient.trainPersonGroup("113");
-                TrainingStatus trainingStatus = faceServiceClient.getPersonGroupTrainingStatus("113");
-                Log.i("TAG",trainingStatus.status+ " status");
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClientException e) {
-                e.printStackTrace();
-            }
+            ImageHelper.trainGroup(params[0]);
             return null;
         }
     }
 
-
-        private class IdentificationTask extends AsyncTask<Void, Void, Void> {
-
-            protected Void doInBackground(Void... params) {
-
-                try {
-                    Face[] faces = ImageHelper.detectURL("http://b2blogger.com/pressroom/upload_images/gps-tracker_1.JPG");
-                    FaceServiceRestClient faceServiceClient = new FaceServiceRestClient(getString(R.string.subscription_key));
-                  //  TrainingStatus trainingStatus = faceServiceClient.getPersonGroupTrainingStatus("113");
-                   // Log.i("TAG",trainingStatus.status+ " status");
-                  //  if (trainingStatus.status != TrainingStatus.Status.Succeeded) {
-                        IdentifyResult[] result = faceServiceClient.identity("113", ImageHelper.getFacesId(faces), 1);
-                        Log.i("TAG","result.length " + result.length+" result. "+ result[0].candidates.get(0).personId);
-                        Log.i("TAG",faceServiceClient.getPerson("113",result[0].candidates.get(0).personId).name +"");
-                  //  }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (ClientException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                Log.i("TAG","завершено");
-            }
-        }
 
     private List<String> getAllImagePaths(File rootDirectory) {
 
@@ -188,7 +189,7 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
         return allPaths;
     }
 
-    private List<Bitmap> getAllImagesFfromDirectory(File rootDirectory) {
+    private List<Bitmap> getAllImagesFromDirectory(File rootDirectory) {
         File[] fileArray = rootDirectory.listFiles();
         List<Bitmap> allImages = new ArrayList<>();
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -206,7 +207,7 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
                 allImages.add(resizedBitmap);
             }
             if (file.isDirectory()) {
-                allImages.addAll(getAllImagesFfromDirectory(file));
+                allImages.addAll(getAllImagesFromDirectory(file));
             }
         }
         return allImages;

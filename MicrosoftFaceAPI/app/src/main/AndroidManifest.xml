@@ -20,7 +20,7 @@
             </intent-filter>
             </activity>
         <activity android:name=".fragments.GroupListActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar"></activity>
 
         <service
             android:name=".ImageLoadService"
