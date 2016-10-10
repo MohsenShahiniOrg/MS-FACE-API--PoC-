@@ -23,6 +23,7 @@ import com.api.face.microsoft.microsoftfaceapi.R;
 import com.api.face.microsoft.microsoftfaceapi.helper.ImageHelper;
 import com.bumptech.glide.Glide;
 import com.microsoft.projectoxford.face.FaceServiceRestClient;
+import com.microsoft.projectoxford.face.contract.CreatePersonResult;
 import com.microsoft.projectoxford.face.contract.Face;
 import com.microsoft.projectoxford.face.contract.IdentifyResult;
 import com.microsoft.projectoxford.face.contract.Person;
@@ -87,10 +88,9 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
         Log.i("TAG", imageGroupRecyclerAdapter.getSelectedItemCount() + "");
         Bitmap bitmap = null;
         for (Integer index : imageGroupRecyclerAdapter.getSelectedItems()) {
-            new PrepareGroupTask().execute();
-            new TrainGroupTask(this).execute("Group");
-
-            new IdentificationTask().execute();
+//            new PrepareGroupTask().execute();
+    //        new TrainGroupTask(this).execute("Group");
+                new IdentificationTask().execute();
         }
     }
 
@@ -103,9 +103,10 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
             String groupName = "Group";
             try {
                 FaceServiceRestClient faceServiceClient = new FaceServiceRestClient(getString(R.string.subscription_key));
-                faceServiceClient.createPerson("Group", "Man", "Man");
+             //  faceServiceClient.createPersonGroup("113","Group","data");
+               CreatePersonResult person = faceServiceClient.createPerson("113", "Man", "Man");
                 Face[] faces = ImageHelper.detectURL("http://b2blogger.com/pressroom/upload_images/gps-tracker_1.JPG");
-                faceServiceClient.addPersonFace("Group", faces[0].faceId, "http://b2blogger.com/pressroom/upload_images/gps-tracker_1.JPG", "usedData", faces[0].faceRectangle);
+                faceServiceClient.addPersonFace("113", person.personId, "http://b2blogger.com/pressroom/upload_images/gps-tracker_1.JPG", "usedData", faces[0].faceRectangle);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -129,8 +130,9 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
 
             try {
                 FaceServiceRestClient faceServiceClient = new FaceServiceRestClient(getString(R.string.subscription_key));
-                faceServiceClient.trainPersonGroup("Group");
-
+                faceServiceClient.trainPersonGroup("113");
+                TrainingStatus trainingStatus = faceServiceClient.getPersonGroupTrainingStatus("113");
+                Log.i("TAG",trainingStatus.status+ " status");
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (ClientException e) {
@@ -148,8 +150,13 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
                 try {
                     Face[] faces = ImageHelper.detectURL("http://b2blogger.com/pressroom/upload_images/gps-tracker_1.JPG");
                     FaceServiceRestClient faceServiceClient = new FaceServiceRestClient(getString(R.string.subscription_key));
-                    IdentifyResult[] result = faceServiceClient.identity("Group", ImageHelper.getFacesId(faces), 1);
-                    Log.i("TAG","result" + result.toString());
+                  //  TrainingStatus trainingStatus = faceServiceClient.getPersonGroupTrainingStatus("113");
+                   // Log.i("TAG",trainingStatus.status+ " status");
+                  //  if (trainingStatus.status != TrainingStatus.Status.Succeeded) {
+                        IdentifyResult[] result = faceServiceClient.identity("113", ImageHelper.getFacesId(faces), 1);
+                        Log.i("TAG","result.length " + result.length+" result. "+ result[0].candidates.get(0).personId);
+                        Log.i("TAG",faceServiceClient.getPerson("113",result[0].candidates.get(0).personId).name +"");
+                  //  }
 
                 } catch (IOException e) {
                     e.printStackTrace();

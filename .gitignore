@@ -38,3 +38,4 @@ captures/
 
 # Keystore files
 *.jks
+MicrosoftFaceAPI/app/src/main/java/com/api/face/microsoft/microsoftfaceapi/ImageViewHolder.java
