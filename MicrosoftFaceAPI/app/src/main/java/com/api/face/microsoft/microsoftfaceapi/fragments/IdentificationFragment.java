@@ -5,12 +5,8 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -20,32 +16,13 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.Toolbar;
 
-import com.api.face.microsoft.microsoftfaceapi.ImageLoadService;
+import com.api.face.microsoft.microsoftfaceapi.activities.GroupListActivity;
 import com.api.face.microsoft.microsoftfaceapi.ImageResultReceiver;
 import com.api.face.microsoft.microsoftfaceapi.R;
 import com.api.face.microsoft.microsoftfaceapi.helper.ImageHelper;
-import com.microsoft.projectoxford.face.FaceServiceClient;
-import com.microsoft.projectoxford.face.FaceServiceRestClient;
-import com.microsoft.projectoxford.face.contract.CreatePersonResult;
-import com.microsoft.projectoxford.face.contract.Face;
-import com.microsoft.projectoxford.face.contract.FaceRectangle;
-import com.microsoft.projectoxford.face.contract.IdentifyResult;
-import com.microsoft.projectoxford.face.contract.Person;
-import com.microsoft.projectoxford.face.rest.ClientException;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 import static android.app.Activity.RESULT_OK;
-import static com.api.face.microsoft.microsoftfaceapi.R.id.toolbar;
 
 public class IdentificationFragment extends Fragment implements View.OnClickListener {
 

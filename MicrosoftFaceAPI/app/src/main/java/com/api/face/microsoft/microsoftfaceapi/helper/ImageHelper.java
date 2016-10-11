@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -43,7 +44,7 @@ public class ImageHelper {
         if (faceServiceClient == null) {
             this.context = context;
             faceServiceClient = new FaceServiceRestClient(context.getString(R.string.subscription_key));
-                    }
+        }
     }
 
     private static ByteArrayInputStream convertBitmapToStream(Bitmap image) {
@@ -56,15 +57,15 @@ public class ImageHelper {
     public static void deleteAll() {
         PersonGroup[] groups = new PersonGroup[0];
         try {
-                groups = faceServiceClient.getPersonGroups();
-                for (PersonGroup group : groups) {
-                    faceServiceClient.deletePersonGroup(group.personGroupId);
-                }
-            } catch (ClientException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+            groups = faceServiceClient.getPersonGroups();
+            for (PersonGroup group : groups) {
+                faceServiceClient.deletePersonGroup(group.personGroupId);
             }
+        } catch (ClientException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static Face[] detect(Bitmap bitmap) {
@@ -117,7 +118,7 @@ public class ImageHelper {
 
     public static boolean createGroup(String personGroupId, String name) {
         try {
-           faceServiceClient.createPersonGroup(personGroupId, name, "data");
+            faceServiceClient.createPersonGroup(personGroupId, name, "data");
         } catch (ClientException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -132,10 +133,10 @@ public class ImageHelper {
         try {
             person = faceServiceClient.createPerson(personGroupId, personName, "data");
 
-                Bitmap bitmap = Glide. with(context).load(imagePath).asBitmap().into(200, 200).get();
-                Face[] faces = ImageHelper.detect(bitmap);
+            Bitmap bitmap = Glide.with(context).load(imagePath).asBitmap().into(200, 200).get();
+            Face[] faces = ImageHelper.detect(bitmap);
             InputStream bitmapStream = convertBitmapToStream(bitmap);
-                faceServiceClient.addPersonFace(personGroupId, person.personId, bitmapStream, "usedData", faces[0].faceRectangle);
+            faceServiceClient.addPersonFace(personGroupId, person.personId, bitmapStream, "usedData", faces[0].faceRectangle);
 
         } catch (ClientException e) {
             e.printStackTrace();
@@ -165,19 +166,43 @@ public class ImageHelper {
     }
 
 
-    public static  boolean identify(String imagePath)
-    {
+    public static ArrayList<PersonGroup> getAllGroups() {
+
+        try {
+            return new ArrayList<PersonGroup>(Arrays.asList(faceServiceClient.getPersonGroups()));
+        } catch (ClientException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+
+    public static ArrayList<Person> getAllGroupPersons(String personGroupId) {
+        try {
+            return new ArrayList<Person>(Arrays.asList(faceServiceClient.getPersons(personGroupId)));
+        } catch (ClientException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static boolean identify(String imagePath) {
         Bitmap bitmap = null;
         try {
 
-            bitmap = Glide. with(context).load(imagePath).asBitmap().into(200, 200).get();
+            bitmap = Glide.with(context).load(imagePath).asBitmap().into(200, 200).get();
             Face[] faces = ImageHelper.detect(bitmap);
 
             PersonGroup[] groups = faceServiceClient.getPersonGroups();
 
-            for (PersonGroup group :groups) {
-                    TrainingStatus trainingStatus = faceServiceClient.getPersonGroupTrainingStatus(group.personGroupId);
-                     Log.i("TAG", trainingStatus.status + " status " + group.personGroupId);
+            for (PersonGroup group : groups) {
+                TrainingStatus trainingStatus = faceServiceClient.getPersonGroupTrainingStatus(group.personGroupId);
+                Log.i("TAG", trainingStatus.status + " status " + group.personGroupId);
                 if (trainingStatus.status == TrainingStatus.Status.Succeeded) {
 
                     IdentifyResult[] result = faceServiceClient.identity(group.personGroupId, ImageHelper.getFacesId(faces), 1);
@@ -187,7 +212,7 @@ public class ImageHelper {
                         Log.i("TAG", faceServiceClient.getPerson(group.personGroupId, result[0].candidates.get(0).personId).name + "");
                     }
                 }
-           }
+            }
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -199,7 +224,7 @@ public class ImageHelper {
             e.printStackTrace();
         }
 
-        return  true;
+        return true;
     }
 
     public static Bitmap drawFaceRectanglesOnBitmap(Bitmap originalBitmap, Face[] faces) {

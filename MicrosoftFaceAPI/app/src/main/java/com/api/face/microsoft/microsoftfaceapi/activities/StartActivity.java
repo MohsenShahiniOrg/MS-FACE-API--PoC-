@@ -1,4 +1,4 @@
-package com.api.face.microsoft.microsoftfaceapi;
+package com.api.face.microsoft.microsoftfaceapi.activities;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 
+import com.api.face.microsoft.microsoftfaceapi.R;
 import com.api.face.microsoft.microsoftfaceapi.fragments.DetectionFragment;
 import com.api.face.microsoft.microsoftfaceapi.fragments.IdentificationFragment;
 import com.api.face.microsoft.microsoftfaceapi.helper.ImageHelper;
