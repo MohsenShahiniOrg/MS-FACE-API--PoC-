@@ -19,7 +19,7 @@
     //fragment_identification
     <string name="add_image_button">Add image</string>
     <string name="manage_group_button">Manage groups</string>
-    <string name="add_person_button">Add person</string>
+
     <string name="identify_button">Identify</string>
 
     //activity_group_list
@@ -37,5 +37,11 @@
     <string name="dialog_message">Person creaation finished</string>
     <string name="possitive_button">Start group training</string>
     <string name="negative_button">Add more person</string>
+
+    <string name="group_not_trained">Not trained</string>
+
+
+    //activity_group_details
+    <string name="add_person_button">Add person</string>
 
 </resources>

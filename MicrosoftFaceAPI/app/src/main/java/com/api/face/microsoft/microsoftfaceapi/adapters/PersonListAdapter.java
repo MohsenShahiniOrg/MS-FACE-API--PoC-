@@ -5,9 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-
+import android.widget.TextView;
 import com.api.face.microsoft.microsoftfaceapi.R;
 import com.microsoft.projectoxford.face.contract.Person;
 
@@ -19,6 +17,10 @@ import java.util.List;
 
 public class PersonListAdapter extends RecyclerView.Adapter<PersonListAdapter.ViewHolder> {
 
+    public void setmPersonDataset(List<Person> mPersonDataset) {
+        this.mPersonDataset = mPersonDataset;
+    }
+
     private List<Person> mPersonDataset;
     private Context mContext;
 
@@ -29,36 +31,34 @@ public class PersonListAdapter extends RecyclerView.Adapter<PersonListAdapter.Vi
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.cart_view_folder, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.unit_person_list, parent, false);
         ViewHolder vh = new ViewHolder(v);
         return vh;
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+
+        holder.personName.setText(mPersonDataset.get(position).name);
     }
 
     @Override
     public int getItemCount() {
-        return mPersonDataset.size();
+        if (mPersonDataset != null)
+            return mPersonDataset.size();
+        return 0;
     }
 
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public ImageView viewImage;
-        public FrameLayout background;
+        public TextView personName;
 
         public ViewHolder(View itemView) {
             super(itemView);
-            background = (FrameLayout) itemView.findViewById(R.id.background);
-            viewImage = (ImageView) itemView.findViewById(R.id.view_image);
-            viewImage.setOnClickListener(this);
+            personName = (TextView) itemView.findViewById(R.id.person_name);
         }
 
-        @Override
-        public void onClick(View view) {
-        }
     }
 }
 

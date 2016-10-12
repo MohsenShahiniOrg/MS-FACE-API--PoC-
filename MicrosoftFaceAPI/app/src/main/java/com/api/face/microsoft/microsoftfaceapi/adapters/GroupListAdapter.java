@@ -2,19 +2,23 @@ package com.api.face.microsoft.microsoftfaceapi.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
+import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.api.face.microsoft.microsoftfaceapi.activities.GroupDetailsActivity;
+import com.api.face.microsoft.microsoftfaceapi.activities.PersonListActivity;
 import com.api.face.microsoft.microsoftfaceapi.R;
+import com.api.face.microsoft.microsoftfaceapi.helper.ImageHelper;
 import com.microsoft.projectoxford.face.contract.PersonGroup;
+import com.microsoft.projectoxford.face.contract.TrainingStatus;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by Alina_Zhdanava on 10/11/2016.
@@ -22,11 +26,16 @@ import java.util.List;
 
 public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.ViewHolder> {
 
+
+    public void setmGroupDataset(List<PersonGroup> mGroupDataset) {
+        this.mGroupDataset = mGroupDataset;
+    }
+
     private List<PersonGroup> mGroupDataset;
     private Context mContext;
 
-    public GroupListAdapter(List<PersonGroup> groupDataset, Context context) {
-        this.mGroupDataset = groupDataset;
+    public GroupListAdapter(List<PersonGroup> mGroupDataset, Context context) {
+        this.mGroupDataset = mGroupDataset;
         this.mContext = context;
     }
 
@@ -40,36 +49,76 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
     @Override
     public void onBindViewHolder(GroupListAdapter.ViewHolder holder, int position) {
 
-        holder.group_name.setText(mGroupDataset.get(position).name);
-        holder.group_status.setText(mGroupDataset.get(position).trainingStatus.status.toString());
+        holder.groupName.setText(mGroupDataset.get(position).name);
+        TrainingStatus status = null;
+        try {
+            status = new TrainSatusTask().execute(mGroupDataset.get(position).personGroupId).get();
+            if (status != null) {
+                holder.groupStatus.setText(status.status.toString());
+            } else {
+
+                holder.groupStatus.setText(R.string.group_not_trained);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
     public int getItemCount() {
+        if (mGroupDataset != null) return mGroupDataset.size();
         return 0;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        public TextView group_name;
-        public TextView group_status;
+        public TextView groupName;
+        public TextView groupStatus;
+        public Button trainGroup;
         public LinearLayout background;
 
         public ViewHolder(View itemView) {
             super(itemView);
             background = (LinearLayout) itemView.findViewById(R.id.background);
-            group_name = (TextView) itemView.findViewById(R.id.group_name);
-            group_status = (TextView) itemView.findViewById(R.id.group_status);
-
+            groupName = (TextView) itemView.findViewById(R.id.group_name);
+            groupStatus = (TextView) itemView.findViewById(R.id.group_status);
+            trainGroup = (Button) itemView.findViewById(R.id.train_group_button);
+            trainGroup.setOnClickListener(this);
             background.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View v) {
-            Intent intent =  new Intent(mContext,GroupDetailsActivity.class);
-            Bundle bundle = new Bundle();
-            bundle.putString("personGroupID",mGroupDataset.get(getAdapterPosition()).personGroupId);
-           mContext.startActivity(intent);
+            switch (v.getId()) {
+                case R.id.train_group_button: {
+                   String id = mGroupDataset.get(getAdapterPosition()).personGroupId;
+                    new TrainGroupTask().execute(id);
+
+                }
+            }
+            Intent intent = new Intent(mContext, PersonListActivity.class);
+            intent.putExtra("personGroupID", mGroupDataset.get(getAdapterPosition()).personGroupId);
+            mContext.startActivity(intent);
+        }
+    }
+
+    private class TrainGroupTask extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... params) {
+            ImageHelper.trainGroup(params[0]);
+            return null;
+        }
+    }
+
+    private class TrainSatusTask extends AsyncTask<String, Void, TrainingStatus> {
+
+        @Override
+        protected TrainingStatus doInBackground(String... params) {
+           return ImageHelper.trainSatus(params[0]);
         }
     }
 }

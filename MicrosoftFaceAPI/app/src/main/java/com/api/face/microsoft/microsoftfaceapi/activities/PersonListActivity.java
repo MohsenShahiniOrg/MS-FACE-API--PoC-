@@ -1,11 +1,13 @@
 package com.api.face.microsoft.microsoftfaceapi.activities;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -17,32 +19,34 @@ import android.widget.TextView;
 import com.api.face.microsoft.microsoftfaceapi.R;
 import com.api.face.microsoft.microsoftfaceapi.adapters.PersonListAdapter;
 import com.api.face.microsoft.microsoftfaceapi.helper.ImageHelper;
+import com.microsoft.projectoxford.face.contract.Person;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
-public class GroupDetailsActivity extends AppCompatActivity implements View.OnClickListener {
+public class PersonListActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Button addPersonButton;
-    private TextView groupName;
-    private TextView groupId;
+    private TextView personId;
     private RecyclerView personRecyclerView;
     private PersonListAdapter personRecyclerAdapter;
     private RecyclerView.LayoutManager personLayoutManager;
+    String personGroupID;
 
-    public GroupDetailsActivity() {
+    public PersonListActivity() {
     }
 
-    public static GroupDetailsActivity newInstance() {
-        GroupDetailsActivity fragment = new GroupDetailsActivity();
+    public static PersonListActivity newInstance() {
+        PersonListActivity fragment = new PersonListActivity();
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_group_details);
+        setContentView(R.layout.activity_person_list);
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
@@ -51,29 +55,38 @@ public class GroupDetailsActivity extends AppCompatActivity implements View.OnCl
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         Bundle bundle = getIntent().getExtras();
-        String personGroupID = bundle.getString("personGroupID");
+        personGroupID = bundle.getString("personGroupID");
 
-        addPersonButton = (Button) findViewById(R.id.create_group_button);
+        addPersonButton = (Button) findViewById(R.id.add_person_button);
         addPersonButton.setOnClickListener(this);
 
-        groupName = (TextView) findViewById(R.id.group_name);
-        groupId = (TextView) findViewById(R.id.group_id);
+        personId = (TextView) findViewById(R.id.person_id);
 
-        personRecyclerView = (RecyclerView) findViewById(R.id.group_recycler_view);
+        personRecyclerView = (RecyclerView) findViewById(R.id.person_recycler_view);
         personRecyclerView.setHasFixedSize(true);
-        personLayoutManager = new GridLayoutManager(this, 4);
+        personLayoutManager = new GridLayoutManager(this,2);
         personRecyclerView.setLayoutManager(personLayoutManager);
-        personRecyclerAdapter = new PersonListAdapter(ImageHelper.getAllGroupPersons(personGroupID), this);
+        personRecyclerAdapter = new PersonListAdapter(null, PersonListActivity.this);
         personRecyclerView.setAdapter(personRecyclerAdapter);
-
     }
 
     @Override
     public void onClick(View v) {
+        Intent intent = new Intent(this, FaceListActivity.class);
+        intent.putExtra("personGroupID", personGroupID);
+        intent.putExtra("personID", personId.getText());
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+           new GetAllPersonsTask().execute(personGroupID);
 
     }
 
-    @Override    public boolean onOptionsItemSelected(MenuItem item) {
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 onBackPressed();
@@ -83,6 +96,19 @@ public class GroupDetailsActivity extends AppCompatActivity implements View.OnCl
         }
     }
 
+    private class GetAllPersonsTask extends AsyncTask<String, Void, List<Person>> {
+        // params[0] - String personGroupId
+        @Override
+        protected List<Person> doInBackground(String... params) {
+            return ImageHelper.getAllGroupPersons(params[0]);
+        }
+
+        @Override
+        protected void onPostExecute(List<Person> persons) {
+            personRecyclerAdapter.setmPersonDataset(persons);
+            personRecyclerAdapter.notifyDataSetChanged();
+        }
+    }
 
     private class CreateGroupTask extends AsyncTask<String, Void, Void> {
         // params[0] - String personGroupId
@@ -95,6 +121,11 @@ public class GroupDetailsActivity extends AppCompatActivity implements View.OnCl
     }
 
     private class CreatePersonTask extends AsyncTask<String, Void, Void> {
+        //String personGroupId,
+        // String personName,
+        // String imagePath
+        //
+
         Bitmap bitmap = null;
 
         @Override
@@ -106,15 +137,6 @@ public class GroupDetailsActivity extends AppCompatActivity implements View.OnCl
         @Override
         protected void onPostExecute(Void aVoid) {
 
-        }
-    }
-
-    private class TrainGroupTask extends AsyncTask<String, Void, Void> {
-
-        @Override
-        protected Void doInBackground(String... params) {
-            ImageHelper.trainGroup(params[0]);
-            return null;
         }
     }
 

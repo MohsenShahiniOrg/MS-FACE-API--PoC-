@@ -17,22 +17,21 @@ import android.widget.TextView;
 import com.api.face.microsoft.microsoftfaceapi.R;
 import com.api.face.microsoft.microsoftfaceapi.adapters.GroupListAdapter;
 import com.api.face.microsoft.microsoftfaceapi.helper.ImageHelper;
+import com.microsoft.projectoxford.face.contract.PersonGroup;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class GroupListActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Button createGroupButton;
     private TextView groupName;
     private TextView groupId;
-    private TextView personName;
-    private RecyclerView groupList;
+    private RecyclerView groupRecyclerView;
     private GroupListAdapter groupRecyclerAdapter;
     private RecyclerView.LayoutManager groupLayoutManager;
-    private AlertDialog.Builder trainDialog;
-
 
     public GroupListActivity() {
     }
@@ -59,31 +58,23 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
         groupName = (TextView) findViewById(R.id.group_name);
         groupId = (TextView) findViewById(R.id.group_id);
 
-        groupList = (RecyclerView) findViewById(R.id.group_recycler_view);
-        groupList.setHasFixedSize(true);
+        groupRecyclerView = (RecyclerView) findViewById(R.id.group_recycler_view);
+        groupRecyclerView.setHasFixedSize(true);
         groupLayoutManager = new LinearLayoutManager(this);
-        groupList.setLayoutManager(groupLayoutManager);
-        groupRecyclerAdapter = new GroupListAdapter(ImageHelper.getAllGroups(),this);
-        groupList.setAdapter(groupRecyclerAdapter);
-
-        trainDialog = new AlertDialog.Builder(this);
-        trainDialog.setTitle(R.string.title);
-        trainDialog.setMessage(R.string.dialog_message);
-        trainDialog.setPositiveButton(R.string.possitive_button, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int arg1) {
-                new TrainGroupTask().execute(groupId.getText().toString());
-            }
-        });
-        trainDialog.setNegativeButton(R.string.negative_button, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int arg1) {
-
-            }
-        });
+        groupRecyclerView.setLayoutManager(groupLayoutManager);
+        groupRecyclerAdapter = new GroupListAdapter(null, this);
+        groupRecyclerView.setAdapter(groupRecyclerAdapter);
     }
 
     @Override
     public void onClick(View v) {
+        new CreateGroupTask().execute(groupId.getText().toString(), groupName.getText().toString());
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+            new GetAllGroupsTask().execute();
     }
 
     @Override
@@ -97,54 +88,29 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
         }
     }
 
-    private class CreateGroupTask extends AsyncTask<String, Void, Void> {
+    private class GetAllGroupsTask extends AsyncTask<Void, Void, List<PersonGroup>> {
         // params[0] - String personGroupId
 // params[1] - String name
+        @Override
+        protected List<PersonGroup> doInBackground(Void... params) {
+            return ImageHelper.getAllGroups();
+        }
+
+        @Override
+        protected void onPostExecute(List<PersonGroup> personGroups) {
+            super.onPostExecute(personGroups);
+            groupRecyclerAdapter.setmGroupDataset(personGroups);
+            groupRecyclerAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private class CreateGroupTask extends AsyncTask<String, Void, Void> {
+        // params[0] - String personGroupId
+// params[1] - String group name
         @Override
         protected Void doInBackground(String... params) {
             ImageHelper.createGroup(params[0], params[1]);
             return null;
         }
     }
-
-    private class CreatePersonTask extends AsyncTask<String, Void, Void> {
-        Bitmap bitmap = null;
-
-        @Override
-        protected Void doInBackground(String... params) {
-            ImageHelper.createPerson(params[0], params[1], params[2]);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            trainDialog.show();
-        }
-    }
-
-    private class TrainGroupTask extends AsyncTask<String, Void, Void> {
-
-        @Override
-        protected Void doInBackground(String... params) {
-            ImageHelper.trainGroup(params[0]);
-            return null;
-        }
-    }
-
-    private List<String> getAllImagePaths(File rootDirectory) {
-
-        File[] fileArray = rootDirectory.listFiles();
-        List<String> allPaths = new ArrayList<>();
-        for (File file : fileArray) {
-            if (file.isDirectory()) {
-                allPaths.addAll(getAllImagePaths(file));
-            }
-            if (file.getAbsolutePath().endsWith(".jpg")) {
-                String filePath = file.getAbsolutePath();
-                allPaths.add(filePath);
-            }
-        }
-        return allPaths;
-    }
-
 }

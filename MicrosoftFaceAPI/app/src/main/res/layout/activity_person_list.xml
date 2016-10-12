@@ -15,14 +15,14 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
     <TextView
-        android:id="@+id/group_name"
+        android:id="@+id/person_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="TextView"
         android:layout_weight="0"/>
 
     <TextView
-        android:id="@+id/group_id"
+        android:id="@+id/person_id"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="TextView"
@@ -36,9 +36,9 @@
         android:scrollbars="vertical" />
 
     <Button
-        android:text="Button"
+        android:text="@string/add_person_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/add_person" />
+        android:id="@+id/add_person_button" />
 
 </LinearLayout>

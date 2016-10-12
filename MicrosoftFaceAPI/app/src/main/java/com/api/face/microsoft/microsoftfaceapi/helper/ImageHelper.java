@@ -1,13 +1,11 @@
 package com.api.face.microsoft.microsoftfaceapi.helper;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
-
 import com.api.face.microsoft.microsoftfaceapi.R;
 import com.bumptech.glide.Glide;
 import com.microsoft.projectoxford.face.FaceServiceClient;
@@ -20,14 +18,12 @@ import com.microsoft.projectoxford.face.contract.Person;
 import com.microsoft.projectoxford.face.contract.PersonGroup;
 import com.microsoft.projectoxford.face.contract.TrainingStatus;
 import com.microsoft.projectoxford.face.rest.ClientException;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -118,7 +114,8 @@ public class ImageHelper {
 
     public static boolean createGroup(String personGroupId, String name) {
         try {
-            faceServiceClient.createPersonGroup(personGroupId, name, "data");
+            if (personGroupId != null & name != null)
+                faceServiceClient.createPersonGroup(personGroupId, name, "data");
         } catch (ClientException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -151,18 +148,28 @@ public class ImageHelper {
         return true;
     }
 
-    public static boolean trainGroup(String personGroupId) {
+    public static void trainGroup(String personGroupId) {
         try {
             faceServiceClient.trainPersonGroup(personGroupId);
-            TrainingStatus trainingStatus = faceServiceClient.getPersonGroupTrainingStatus(personGroupId);
-            Log.i("TAG", trainingStatus.status + " status");
         } catch (ClientException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return true;
+    }
+
+    public static TrainingStatus trainSatus(String personGroupId) {
+        try {
+            faceServiceClient.trainPersonGroup(personGroupId);
+            return faceServiceClient.getPersonGroupTrainingStatus(personGroupId);
+
+        } catch (ClientException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+return null;
     }
 
 
@@ -191,8 +198,9 @@ public class ImageHelper {
         return null;
     }
 
-    public static boolean identify(String imagePath) {
+    public static String identify(String imagePath) {
         Bitmap bitmap = null;
+        String identifyresult = null;
         try {
 
             bitmap = Glide.with(context).load(imagePath).asBitmap().into(200, 200).get();
@@ -207,9 +215,7 @@ public class ImageHelper {
 
                     IdentifyResult[] result = faceServiceClient.identity(group.personGroupId, ImageHelper.getFacesId(faces), 1);
                     if (result[0].candidates.size() > 0) {
-                        Log.i("TAG", "result.length " + result.length + " result. " + result[0].candidates.get(0).personId + " persistancde " + result[0].candidates.get(0).confidence);
-
-                        Log.i("TAG", faceServiceClient.getPerson(group.personGroupId, result[0].candidates.get(0).personId).name + "");
+                        identifyresult += result[0].candidates.get(0).confidence + " -- " + faceServiceClient.getPerson(group.personGroupId, result[0].candidates.get(0).personId).name ;
                     }
                 }
             }
@@ -224,7 +230,7 @@ public class ImageHelper {
             e.printStackTrace();
         }
 
-        return true;
+        return identifyresult;
     }
 
     public static Bitmap drawFaceRectanglesOnBitmap(Bitmap originalBitmap, Face[] faces) {

@@ -16,9 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.api.face.microsoft.microsoftfaceapi.activities.GroupListActivity;
-import com.api.face.microsoft.microsoftfaceapi.ImageResultReceiver;
 import com.api.face.microsoft.microsoftfaceapi.R;
 import com.api.face.microsoft.microsoftfaceapi.helper.ImageHelper;
 
@@ -33,12 +31,6 @@ public class IdentificationFragment extends Fragment implements View.OnClickList
     private Button identifyButton;
     private String picturePath;
     private final int UPLOAD_IMAGE = 1;
-    private ImageResultReceiver imageReceiver;
-    public static final String URL = "url";
-    public static final String CALLBACK = "receiver";
-    public static final String RESULT_IMAGE = "image";
-    public static final String RESULT_FACES = "faces";
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -55,7 +47,7 @@ public class IdentificationFragment extends Fragment implements View.OnClickList
         addGroupButton.setOnClickListener(this);
         identifyButton.setOnClickListener(this);
 
-      //  new DeleteAllGroupsTask().execute();
+        //new DeleteAllGroupsTask().execute();
 
         return view;
     }
@@ -83,7 +75,7 @@ public class IdentificationFragment extends Fragment implements View.OnClickList
 
             case R.id.identify_button: {
 
-            new IdentificationTask().execute(picturePath);
+                new IdentificationTask().execute(picturePath);
                 break;
             }
         }
@@ -110,19 +102,18 @@ public class IdentificationFragment extends Fragment implements View.OnClickList
         }
     }
 
-    private class IdentificationTask extends AsyncTask<String, Void, Void> {
+    private class IdentificationTask extends AsyncTask<String, Void, String> {
         // String imagePath - params[0]
 //
-        protected Void doInBackground(String... params) {
+        protected String doInBackground(String... params) {
 
-            ImageHelper.identify(params[0]);
-
-            return null;
+            return ImageHelper.identify(params[0]);
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
+        protected void onPostExecute(String result) {
             Log.i("TAG", "завершено");
+                resultText.setText(result);
         }
     }
 
