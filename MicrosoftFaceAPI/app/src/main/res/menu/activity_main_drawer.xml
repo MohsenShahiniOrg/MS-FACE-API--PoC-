@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_detection"
+            android:title="@string/detection_text" />
+        <item
+            android:id="@+id/nav_identification"
+            android:title="@string/identification_text" />
+        <item
+            android:id="@+id/nav_verification"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="@string/verification_text" />
+        <item
+            android:id="@+id/nav_grouping"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="@string/grouping_text" />
+    </group>
+
+
+</menu>

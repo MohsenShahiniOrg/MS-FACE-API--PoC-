@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name">Microsoft Face API</string>
+    <string name="subscription_key">502327c25c64480990c6eb74658199bb</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="detection_text">Detection</string>
+    <string name="verification_text">Verification</string>
+    <string name="grouping_text">Grouping</string>
+    <string name="identification_text">Identification</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    //fragment_identification
+    <string name="add_image_button">Add image</string>
+    <string name="manage_group_button">Manage groups</string>
+
+    <string name="identify_button">Identify</string>
+
+    //activity_group_list
+    <string name="group_name">Put group name here</string>
+    <string name="create_group">Create group</string>
+    <string name="group_data">Additional group information</string>
+    <string name="group_id">later it will be autocreated (int)</string>
+
+    <string name="person_name">Put person name here</string>
+    <string name="create_person">Create person</string>
+    <string name="person_data">Additional person information</string>
+
+    //trainDialog
+    <string name="title">Person creaation </string>
+    <string name="dialog_message">Person creaation finished</string>
+    <string name="possitive_button">Start group training</string>
+    <string name="negative_button">Add more person</string>
+
+    <string name="group_not_trained">Not trained</string>
+
+
+    //activity_group_details
+    <string name="add_person_button">Add person</string>
+
+</resources>
