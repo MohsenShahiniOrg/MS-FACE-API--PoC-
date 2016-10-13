@@ -18,7 +18,6 @@ import com.microsoft.projectoxford.face.contract.PersonGroup;
 import com.microsoft.projectoxford.face.contract.TrainingStatus;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Created by Alina_Zhdanava on 10/11/2016.
@@ -42,29 +41,24 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
     @Override
     public GroupListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.unit_group_list, parent, false);
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
+        return new ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(GroupListAdapter.ViewHolder holder, int position) {
-
         holder.groupName.setText(mGroupDataset.get(position).name);
-        TrainingStatus status = null;
+        TrainingStatus status;
+
         try {
             status = new TrainSatusTask().execute(mGroupDataset.get(position).personGroupId).get();
             if (status != null) {
                 holder.groupStatus.setText(status.status.toString());
             } else {
-
                 holder.groupStatus.setText(R.string.group_not_trained);
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
@@ -73,14 +67,13 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
         return 0;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        TextView groupName;
+        TextView groupStatus;
+        Button trainGroup;
+        LinearLayout background;
 
-        public TextView groupName;
-        public TextView groupStatus;
-        public Button trainGroup;
-        public LinearLayout background;
-
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             background = (LinearLayout) itemView.findViewById(R.id.background);
             groupName = (TextView) itemView.findViewById(R.id.group_name);
@@ -92,20 +85,18 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
 
         @Override
         public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.train_group_button: {
-                   String id = mGroupDataset.get(getAdapterPosition()).personGroupId;
-                    new TrainGroupTask().execute(id);
-
-                }
+            if (v.getId() == R.id.train_group_button) {
+                String id = mGroupDataset.get(getAdapterPosition()).personGroupId;
+                new TrainGroupTask().execute(id);
             }
+
             Intent intent = new Intent(mContext, PersonListActivity.class);
             intent.putExtra("personGroupID", mGroupDataset.get(getAdapterPosition()).personGroupId);
             mContext.startActivity(intent);
         }
     }
 
-    private class TrainGroupTask extends AsyncTask<String, Void, Void> {
+    private static class TrainGroupTask extends AsyncTask<String, Void, Void> {
 
         @Override
         protected Void doInBackground(String... params) {
@@ -114,7 +105,7 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
         }
     }
 
-    private class TrainSatusTask extends AsyncTask<String, Void, TrainingStatus> {
+    private static class TrainSatusTask extends AsyncTask<String, Void, TrainingStatus> {
 
         @Override
         protected TrainingStatus doInBackground(String... params) {

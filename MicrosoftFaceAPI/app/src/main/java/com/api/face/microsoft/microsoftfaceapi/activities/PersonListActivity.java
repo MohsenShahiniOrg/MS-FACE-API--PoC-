@@ -35,13 +35,11 @@ public class PersonListActivity extends AppCompatActivity implements View.OnClic
     private RecyclerView.LayoutManager personLayoutManager;
     String personGroupID;
 
-    public PersonListActivity() {
-    }
-
-    public static PersonListActivity newInstance() {
+    // Strange solution - need to discuss
+/*    public static PersonListActivity newInstance() {
         PersonListActivity fragment = new PersonListActivity();
         return fragment;
-    }
+    }*/
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -81,8 +79,7 @@ public class PersonListActivity extends AppCompatActivity implements View.OnClic
     @Override
     protected void onResume() {
         super.onResume();
-           new GetAllPersonsTask().execute(personGroupID);
-
+        new GetAllPersonsTask().execute(personGroupID);
     }
 
     @Override
@@ -112,7 +109,7 @@ public class PersonListActivity extends AppCompatActivity implements View.OnClic
 
     private class CreateGroupTask extends AsyncTask<String, Void, Void> {
         // params[0] - String personGroupId
-// params[1] - String name
+        // params[1] - String name
         @Override
         protected Void doInBackground(String... params) {
             ImageHelper.createGroup(params[0], params[1]);
@@ -121,12 +118,6 @@ public class PersonListActivity extends AppCompatActivity implements View.OnClic
     }
 
     private class CreatePersonTask extends AsyncTask<String, Void, Void> {
-        //String personGroupId,
-        // String personName,
-        // String imagePath
-        //
-
-        Bitmap bitmap = null;
 
         @Override
         protected Void doInBackground(String... params) {
@@ -141,7 +132,6 @@ public class PersonListActivity extends AppCompatActivity implements View.OnClic
     }
 
     private List<String> getAllImagePaths(File rootDirectory) {
-
         File[] fileArray = rootDirectory.listFiles();
         List<String> allPaths = new ArrayList<>();
         for (File file : fileArray) {

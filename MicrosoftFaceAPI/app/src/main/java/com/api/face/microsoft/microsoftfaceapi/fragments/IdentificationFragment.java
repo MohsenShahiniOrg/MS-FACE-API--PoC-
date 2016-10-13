@@ -57,24 +57,19 @@ public class IdentificationFragment extends Fragment implements View.OnClickList
 
         switch (v.getId()) {
             case R.id.add_image_button: {
-                Intent i = new Intent(
+                Intent i = new Intent( // "i" ? ;-)
                         Intent.ACTION_PICK,
                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 
                 startActivityForResult(i, UPLOAD_IMAGE);
-
                 break;
             }
-
             case R.id.add_group_button: {
                 Intent intent = new Intent(getActivity(), GroupListActivity.class);
                 startActivity(intent);
-
                 break;
             }
-
             case R.id.identify_button: {
-
                 new IdentificationTask().execute(picturePath);
                 break;
             }

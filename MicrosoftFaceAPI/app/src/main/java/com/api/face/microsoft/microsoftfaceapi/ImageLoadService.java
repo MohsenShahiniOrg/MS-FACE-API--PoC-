@@ -42,13 +42,11 @@ public class ImageLoadService extends IntentService {
 
     private final String TAG = "IntentServiceLogs";
 
-
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.d(TAG, "onHandleIntent start: ");
-        InputStream in = null;
+        InputStream in = null; // input stream always should be closed
         try {
-
             URL url = new URL(intent.getStringExtra(DetectionFragment.URL));
             in = url.openStream();
             Bitmap bitmap = BitmapFactory.decodeStream(in);
@@ -58,12 +56,16 @@ public class ImageLoadService extends IntentService {
             Bundle bundle = new Bundle();
             bundle.putParcelable(DetectionFragment.RESULT_IMAGE, bitmap);
             imageReceiver.send(0, bundle);
-
-
-        } catch (MalformedURLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

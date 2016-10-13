@@ -25,14 +25,12 @@ public class StartActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private Fragment fragment;
-    private FrameLayout frame;
+    private DrawerLayout drawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
-
-        frame = (FrameLayout) findViewById(R.id.fragment_frame);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -46,7 +44,7 @@ public class StartActivity extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -54,7 +52,7 @@ public class StartActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        new ImageHelper(getApplicationContext());
+        new ImageHelper(getApplicationContext()); // Who is using it?
     }
 
     @Override
@@ -69,48 +67,40 @@ public class StartActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main2, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        final int id = item.getItemId();
+        return id == R.id.action_settings || super.onOptionsItemSelected(item);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
+        final int id = item.getItemId();
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
-      switch(item.getItemId())
-      {
-          case R.id.nav_detection :{
-              fragment = new DetectionFragment();
-              transaction.replace(frame.getId(),fragment).commit();
-              break;}
-
-          case R.id.nav_identification :{
-              fragment = new IdentificationFragment();
-              transaction.replace(frame.getId(),fragment).commit();
-              break;}
-
-          case R.id.nav_verification :{
-              break;}
-
-          case R.id.nav_grouping :{
-              break;}
-
-      }
+        switch (id) {
+            case R.id.nav_detection: {
+                fragment = new DetectionFragment();
+                transaction.replace(R.id.fragment_frame, fragment).commit();
+                break;
+            }
+            case R.id.nav_identification: {
+                fragment = new IdentificationFragment();
+                transaction.replace(R.id.fragment_frame, fragment).commit();
+                break;
+            }
+            case R.id.nav_verification: {
+                break;
+            }
+            case R.id.nav_grouping: {
+                break;
+            }
+        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

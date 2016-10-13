@@ -33,13 +33,13 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
     private GroupListAdapter groupRecyclerAdapter;
     private RecyclerView.LayoutManager groupLayoutManager;
 
-    public GroupListActivity() {
-    }
-
+    // Strange solution - need to discuss
+/*
     public static GroupListActivity newInstance() {
         GroupListActivity fragment = new GroupListActivity();
         return fragment;
     }
+*/
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -74,7 +74,7 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
     @Override
     protected void onResume() {
         super.onResume();
-            new GetAllGroupsTask().execute();
+        new GetAllGroupsTask().execute();
     }
 
     @Override
@@ -90,7 +90,7 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
 
     private class GetAllGroupsTask extends AsyncTask<Void, Void, List<PersonGroup>> {
         // params[0] - String personGroupId
-// params[1] - String name
+        // params[1] - String name
         @Override
         protected List<PersonGroup> doInBackground(Void... params) {
             return ImageHelper.getAllGroups();
@@ -106,7 +106,7 @@ public class GroupListActivity extends AppCompatActivity implements View.OnClick
 
     private class CreateGroupTask extends AsyncTask<String, Void, Void> {
         // params[0] - String personGroupId
-// params[1] - String group name
+        // params[1] - String group name
         @Override
         protected Void doInBackground(String... params) {
             ImageHelper.createGroup(params[0], params[1]);

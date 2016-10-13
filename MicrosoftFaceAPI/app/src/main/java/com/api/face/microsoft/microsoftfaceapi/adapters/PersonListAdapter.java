@@ -32,33 +32,27 @@ public class PersonListAdapter extends RecyclerView.Adapter<PersonListAdapter.Vi
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.unit_person_list, parent, false);
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
+        return new ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-
         holder.personName.setText(mPersonDataset.get(position).name);
     }
 
     @Override
     public int getItemCount() {
-        if (mPersonDataset != null)
-            return mPersonDataset.size();
-        return 0;
+        return mPersonDataset != null ? mPersonDataset.size() : 0;
     }
 
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+        TextView personName;
 
-        public TextView personName;
-
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             personName = (TextView) itemView.findViewById(R.id.person_name);
         }
-
     }
 }
 

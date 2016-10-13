@@ -35,13 +35,11 @@ public class FaceListActivity extends AppCompatActivity implements View.OnClickL
     private String personId;
     private String personGroupID;
 
-    public FaceListActivity() {
-    }
-
-    public static PersonListActivity newInstance() {
+    // Strange solution - need to discuss
+/*    public static PersonListActivity newInstance() {
         PersonListActivity fragment = new PersonListActivity();
         return fragment;
-    }
+    }*/
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -95,10 +93,6 @@ public class FaceListActivity extends AppCompatActivity implements View.OnClickL
 
 
     private class CreatePersonTask extends AsyncTask<String, Void, Void> {
-        //String personGroupId,
-        // String personName,
-        // String imagePath
-        Bitmap bitmap = null;
 
         @Override
         protected Void doInBackground(String... params) {
@@ -113,7 +107,6 @@ public class FaceListActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private List<String> getAllImagePaths(File rootDirectory) {
-
         File[] fileArray = rootDirectory.listFiles();
         List<String> allPaths = new ArrayList<>();
         for (File file : fileArray) {

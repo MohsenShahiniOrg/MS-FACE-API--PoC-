@@ -28,16 +28,16 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     private SparseBooleanArray selectedItems = new SparseBooleanArray();
 
     public ImageAdapter(List<String> myDataset, Context context) {
-        if (myDataset != null)
+        if (myDataset != null) {
             mImageDataset = myDataset;
+        }
         mContext = context;
     }
 
     @Override
     public ImageAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.unit_face_list, parent, false);
-        ImageAdapter.ViewHolder vh = new ImageAdapter.ViewHolder(v);
-        return vh;
+        return new ImageAdapter.ViewHolder(v);
     }
 
     @Override
@@ -48,9 +48,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
     @Override
     public int getItemCount() {
-        if (mImageDataset != null)
-            return mImageDataset.size();
-        return 0;
+        return mImageDataset != null ? mImageDataset.size() : 0;
     }
 
     public void toggleSelection(int pos) {
@@ -66,22 +64,21 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     }
 
     public List<String> getSelectedItems() {
-        List<String> items =
-                new ArrayList<String>(selectedItems.size());
-        for (int i = 0; i < selectedItems.size(); i++) {
-            items.add( mImageDataset.get(selectedItems.keyAt(i)));
+        final int size = selectedItems.size();
+
+        List<String> items = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            items.add(mImageDataset.get(selectedItems.keyAt(i)));
         }
         return items;
     }
 
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        ImageView viewImage;
+        RelativeLayout backLayout;
 
-        public ImageView viewImage;
-        public RelativeLayout backLayout;
-
-
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             backLayout = (RelativeLayout) itemView.findViewById(R.id.background);
             viewImage = (ImageView) itemView.findViewById(R.id.view_image);

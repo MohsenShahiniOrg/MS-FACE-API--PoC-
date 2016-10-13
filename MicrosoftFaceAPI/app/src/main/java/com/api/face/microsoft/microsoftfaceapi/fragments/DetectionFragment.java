@@ -35,13 +35,6 @@ public class DetectionFragment extends Fragment implements View.OnClickListener 
     public static final String CALLBACK = "receiver";
     public static final String RESULT_IMAGE = "image";
 
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -57,14 +50,13 @@ public class DetectionFragment extends Fragment implements View.OnClickListener 
 
     @Override
     public void onClick(View v) {
-        Bitmap bitmap = null;
+        Bitmap bitmap = null; // who is using it?
 
-        Intent i = new Intent(
+        Intent i = new Intent( // "i" is not very informative for this variable - let's rename as UploadImageIntent
                 Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 
         startActivityForResult(i, UPLOAD_IMAGE);
-
     }
 
 
@@ -76,22 +68,31 @@ public class DetectionFragment extends Fragment implements View.OnClickListener 
             Uri selectedImage = data.getData();
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
+            String picturePath = null;
+            //TODO: Let's discuss this block of code
             Cursor cursor = getActivity().getContentResolver().query(selectedImage,
                     filePathColumn, null, null, null);
-            cursor.moveToFirst();
+            if (cursor != null) {
+                try {
+                    cursor.moveToFirst();
+                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                    picturePath = cursor.getString(columnIndex);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    cursor.close();
+                }
+            }
 
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String picturePath = cursor.getString(columnIndex);
-            cursor.close();
-
-            Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
-            imageView.setImageBitmap(bitmap);
-            new DetectionTask().execute(bitmap);
+            if (picturePath != null) {
+                Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+                imageView.setImageBitmap(bitmap);
+                new DetectionTask().execute(bitmap);
+            }
         }
     }
 
     private class DetectionTask extends AsyncTask<Bitmap, Void, Face[]> {
-
         Bitmap bitmap;
 
         @Override
@@ -109,7 +110,6 @@ public class DetectionFragment extends Fragment implements View.OnClickListener 
 
         @Override
         protected void onPostExecute(Face[] result) {
-
             imageView.setImageBitmap(ImageHelper.drawFaceRectanglesOnBitmap(bitmap, result));
 
             String face_description = "Age: " + (result[0].faceAttributes.age) + "\n"
@@ -118,9 +118,7 @@ public class DetectionFragment extends Fragment implements View.OnClickListener 
                     + "yaw(" + result[0].faceAttributes.headPose.yaw + ")\n"
                     + "Glasses: " + result[0].faceAttributes.glasses + "\n"
                     + "Smile: " + result[0].faceAttributes.smile;
-
             resultText.setText(face_description);
-
         }
     }
 }

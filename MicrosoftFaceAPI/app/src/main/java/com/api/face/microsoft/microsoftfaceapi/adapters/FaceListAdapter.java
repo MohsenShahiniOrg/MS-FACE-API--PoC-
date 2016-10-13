@@ -27,38 +27,34 @@ public class FaceListAdapter extends RecyclerView.Adapter<FaceListAdapter.ViewHo
     private Context mContext;
 
     public FaceListAdapter(FaceList myDataset, Context context) {
-        if(myDataset !=null)
-        mFaceDataset = myDataset.faces;
+        if (myDataset != null) {
+            mFaceDataset = myDataset.faces;
+        }
         mContext = context;
     }
 
     @Override
     public FaceListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.unit_person_list, parent, false);
-        FaceListAdapter.ViewHolder vh = new FaceListAdapter.ViewHolder(v);
-        return vh;
+        return new FaceListAdapter.ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(FaceListAdapter.ViewHolder holder, int position) {
-
     }
 
     @Override
     public int getItemCount() {
-        if (mFaceDataset != null)
-            return mFaceDataset.length;
-        return 0;
+        return mFaceDataset != null ? mFaceDataset.length : 0;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder  {
+    static class ViewHolder extends RecyclerView.ViewHolder  {
+        ImageView viewImage;
+        LinearLayout background;
+        TextView person_name;
+        TextView person_id;
 
-        public ImageView viewImage;
-        public LinearLayout background;
-        public TextView person_name;
-        public TextView person_id;
-
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             background = (LinearLayout) itemView.findViewById(R.id.background);
             viewImage = (ImageView) itemView.findViewById(R.id.view_image);
